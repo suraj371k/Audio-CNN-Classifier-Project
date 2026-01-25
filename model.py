@@ -1,6 +1,8 @@
 import torch
 import torch.nn as nn
 
+# creating reusable residual block
+
 
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
@@ -34,3 +36,10 @@ class ResidualBlock(nn.Module):
         out = torch.relu(out_add)
 
         return out
+
+
+class AudioCNN(nn.Module):
+    def __init__(self, num_classes=50):
+        super().__init__()
+        self.conv1 = nn.Sequential(
+            nn.Conv2d(1, 64, 7, stride=2, padding=3, bias=False), nn.BatchNorm2d(64), )
