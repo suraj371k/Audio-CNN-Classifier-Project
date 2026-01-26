@@ -81,8 +81,13 @@ class ESC50Dataset(Dataset):
 
 def mixup_data(x, y):
     lam = np.random.beta(0.2, 0.2)   # x -> features, y -> labels
+
     batch_size = x.size(0)
     index = torch.randperm(batch_size).to(x.device)
+
+    # (o.7 * audio1) + (0.3 * audio2)
+    mixed_x = lam * x + (1 - lam) * x[index, :]
+    y_a, y_b = y, y[index]
 
 
 @app.function(image=image, gpu="A10G", volumes={"/data": volume, "/models": model_volume}, timeout=60 * 60 * 3)
