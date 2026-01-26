@@ -10,6 +10,9 @@ import torchaudio
 import torch.nn as nn
 import torchaudio.transforms as T
 import torch.optim as optim
+from torch.optim.lr_scheduler import OneCycleLR
+from tqdm import tqdm
+import numpy as np
 
 from model import simpleResNetAudioCNN
 
@@ -76,6 +79,12 @@ class ESC50Dataset(Dataset):
         return spectrogram, row['label']
 
 
+def mixup_data(x, y):
+    lam = np.random.beta(0.2, 0.2)   # x -> features, y -> labels
+    batch_size = x.size(0)
+    index = torch.randperm(batch_size).to(x.device)
+
+
 @app.function(image=image, gpu="A10G", volumes={"/data": volume, "/models": model_volume}, timeout=60 * 60 * 3)
 def train():
     esc50_dir = Path("/opt/esc50-data")
@@ -117,7 +126,8 @@ def train():
     print("Training samples: " + str(len(train_dataset)))
     print("Validation samples: " + str(len(validation_dataset)))
 
-    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    train_dataloader = DataLoader(
+        train_dataset, batch_size=32, shuffle=True)
     validation_loader = DataLoader(
         validation_dataset, batch_size=32, shuffle=False)
 
@@ -129,6 +139,28 @@ def train():
     criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
     # optimizers job is to tune the weights and biases of the entire model
     optimizer = optim.AdamW(model.parameters(), lr=0.0005, weight_decay=0.01)
+
+    # scheduler adjusts the learning rate during training so that model converges better
+    scheduler = OneCycleLR(
+        optimizer,
+        max_lr=0.002,
+        epochs=num_epochs,
+        steps_per_epoch=len(train_dataloader),
+        pct_start=0.1
+    )
+
+    best_accuracy = 0.0
+
+    print("Starting to train the model...")
+    for epoch in range(num_epochs):
+        model.train()
+        epoch_loss = 0.0
+
+        progress_bar = tqdm(
+            train_dataloader, desc=f"Epoch {epoch+1}/{num_epochs}")
+
+        for data, target in progress_bar:
+            data, target = data.to(device), target.to(device)
 
 
 @app.local_entrypoint()
