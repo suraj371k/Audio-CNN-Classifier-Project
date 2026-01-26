@@ -7,6 +7,8 @@ import modal
 import torch
 from torch.utils.data import Dataset
 import torchaudio
+import torch.nn as nn
+import torchaudio.transforms as T
 
 app = modal.App("audio-cnn-classifier")
 
@@ -73,7 +75,18 @@ class ESC50Dataset(Dataset):
 
 @app.function(image=image, gpu="A10G", volumes={"/data": volume, "/models": model_volume}, timeout=60 * 60 * 3)
 def train():
-    print("training")
+    esc50_dir = Path("/opt/esc50-data")
+
+    train_transform = nn.Sequential(
+        T.MelSpectrogram(
+            sample_rate=22050,
+            n_fft=1024,
+            hop_length=512,
+            n_mels=128,
+            f_min=0,
+            f_max=11025
+        )
+    )
 
 
 @app.local_entrypoint()
