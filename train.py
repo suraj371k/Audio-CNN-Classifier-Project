@@ -5,10 +5,13 @@ import pandas as pd
 import modal
 
 import torch
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
 import torchaudio
 import torch.nn as nn
 import torchaudio.transforms as T
+import torch.optim as optim
+
+from model import simpleResNetAudioCNN
 
 app = modal.App("audio-cnn-classifier")
 
@@ -85,8 +88,47 @@ def train():
             n_mels=128,
             f_min=0,
             f_max=11025
-        )
+        ),
+        # convert to decibles
+        T.AmplitudeToDB(),
+        T.FrequencyMasking(freq_mask_param=30),
+        # these two are like dropouts(to prevent overfitting) but for spectrograms/audio
+        T.TimeMasking(time_mask_param=80)
     )
+
+    validation_transform = nn.Sequential(
+        T.MelSpectrogram(
+            sample_rate=22050,
+            n_fft=1024,
+            hop_length=512,
+            n_mels=128,
+            f_min=0,
+            f_max=11025
+        ),
+        T.AmplitudeToDB()
+    )
+
+    train_dataset = ESC50Dataset(
+        data_dir=esc50_dir, metadata_file=esc50_dir / "meta" / "esc50.csv", split="train", transform=train_transform)
+
+    validation_dataset = ESC50Dataset(
+        data_dir=esc50_dir, metadata_file=esc50_dir / "meta" / "esc50.csv", split="validation", transform=validation_transform)
+
+    print("Training samples: " + str(len(train_dataset)))
+    print("Validation samples: " + str(len(validation_dataset)))
+
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+    validation_loader = DataLoader(
+        validation_dataset, batch_size=32, shuffle=False)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = simpleResNetAudioCNN(num_classes=len(train_dataset.classes))
+    model.to(device)
+
+    num_epochs = 100
+    criterion = nn.CrossEntropyLoss(label_smoothing=0.1)
+    # optimizers job is to tune the weights and biases of the entire model
+    optimizer = optim.AdamW(model.parameters(), lr=0.0005, weight_decay=0.01)
 
 
 @app.local_entrypoint()
