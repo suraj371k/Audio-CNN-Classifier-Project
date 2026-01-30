@@ -16,6 +16,7 @@ app = modal.App("audio-cnn-classifier")
 
 image = (modal.Image.debian_slim()
          .pip_install_from_requirements("requirements.txt")
+         # used to read audio files
          .apt_install(["libsndfile1"])
          .add_local_python_source("model"))
 
@@ -26,7 +27,7 @@ class AudioProcessor:
     def __init__(self):
         self.transform = nn.Sequential(
             T.MelSpectrogram(
-                sample_rate=22050,
+                sample_rate=44100,
                 n_fft=1024,
                 hop_length=512,
                 n_mels=128,
@@ -41,9 +42,12 @@ class AudioProcessor:
 
         waveform = waveform.unsqueeze(0)
 
+        # add another channel dimension to the spectrogram
         spectrogram = self.transform(waveform)
 
         return spectrogram.unsqueeze(0)
+
+# Pydantics model for request validation
 
 
 class InferenceRequest(BaseModel):
@@ -63,6 +67,7 @@ class AudioClassifier:
         self.classes = checkpoint['classes']
 
         self.model = simpleResNetAudioCNN(num_classes=len(self.classes))
+        # load weights into model
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.model.to(self.device)
         self.model.eval()
@@ -72,14 +77,23 @@ class AudioClassifier:
 
     @modal.fastapi_endpoint(method="POST")
     def inference(self, request: InferenceRequest):
+        # decoding base64 audio data
         audio_bytes = base64.b64decode(request.audio_data)
+        print(f"Decoded bytes length: {len(audio_bytes)}")    # Should be >0
 
-        audio_data, sample_rate = sf.read(
-            io.BytesIO(audio_bytes), dtype="float32")
+        # read audio data from bytes
+        audio_buffer = io.BytesIO(audio_bytes)
+        audio_buffer.seek(0)  # Reset buffer position!
+        audio_data, sample_rate = sf.read(audio_buffer, dtype="float32")
+        # Key check
+        print(
+            f"sf.read: audio_data shape {audio_data.shape}, sr {sample_rate}")
 
+        # if stereo, convert to mono by averaging channels
         if audio_data.ndim > 1:
             audio_data = np.mean(audio_data, axis=1)
 
+        # resample to 44100 Hz if necessary
         if sample_rate != 44100:
             audio_data = librosa.resample(
                 y=audio_data, orig_sr=sample_rate, target_sr=44100)
@@ -91,32 +105,46 @@ class AudioClassifier:
             output, feature_maps = self.model(
                 spectrogram, return_feature_maps=True)
 
+            # Handle NaN values in output, means replaces NaNs with zeros
             output = torch.nan_to_num(output)
+
+            # Apply softmax to get probabilities, softmax makesure all values are between 0 and 1 and sum to 1
+            # here, dim = 0 is batch dim, dim = 1 is class dim (batch_size, num_classes)
             probabilities = torch.softmax(output, dim=1)
+
+            # Get top 3 predictions
             top3_probs, top3_indicies = torch.topk(probabilities[0], 3)
 
+            # Prepare predictions, example format: top3_probs: [0.9, 0.05, 0.03], top3_indicies: [15, 42, 8]
+            # (0.9, 15), (0.05, 42), (0.03, 8)
             predictions = [{"class": self.classes[idx.item()], "confidence": prob.item()}
                            for prob, idx in zip(top3_probs, top3_indicies)]
 
+            # Prepare visualization data from feature maps
             viz_data = {}
             for name, tensor in feature_maps.items():
                 if tensor.dim() == 4:  # [batch_size, channels, height, width]
                     aggregated_tensor = torch.mean(tensor, dim=1)
-                    squeezed_tensor = aggregated_tensor.squeeze(0)
+                    squeezed_tensor = aggregated_tensor.squeeze(
+                        0)  # remove batch dim
+                    # convert to numpy instead of tensor
                     numpy_array = squeezed_tensor.cpu().numpy()
                     clean_array = np.nan_to_num(numpy_array)
                     viz_data[name] = {
                         "shape": list(clean_array.shape),
                         "values": clean_array.tolist()
                     }
-
+            # Prepare clean spectrogram for response
+            # we do it twice -> [batch_size, channels, height, width] -> [height, width]
             spectrogram_np = spectrogram.squeeze(0).squeeze(0).cpu().numpy()
+            # we will convert NaN to number (0) for JSON serialization
             clean_spectrogram = np.nan_to_num(spectrogram_np)
 
             max_samples = 8000
             waveform_sample_rate = 44100
             if len(audio_data) > max_samples:
                 step = len(audio_data) // max_samples
+                # downsample and creates a new array
                 waveform_data = audio_data[::step]
             else:
                 waveform_data = audio_data
@@ -130,8 +158,8 @@ class AudioClassifier:
             },
             "waveform": {
                 "values": waveform_data.tolist(),
-                "sample_rate": waveform_sample_rate,
-                "duration": len(audio_data) / waveform_sample_rate
+                "sample_rate": 44100,
+                "duration": len(audio_data) / 44100
             }
         }
 
@@ -140,7 +168,9 @@ class AudioClassifier:
 
 @app.local_entrypoint()
 def main():
-    audio_data, sample_rate = sf.read("chirpingbirds.wav")
+    audio_data, sample_rate = sf.read("4th.wav")
+    # Debug here too
+    print(f"Local file: shape {audio_data.shape}, sr {sample_rate}")
 
     buffer = io.BytesIO()
     sf.write(buffer, audio_data, sample_rate, format="WAV")

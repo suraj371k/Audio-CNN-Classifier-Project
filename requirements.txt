@@ -3,5 +3,9 @@ numpy
 torchaudio
 torch
 tqdm
+fastapi
+librosa
+pydantic
+soundfile
 tensorboard
 torchcodec
