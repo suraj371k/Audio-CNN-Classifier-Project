@@ -4,10 +4,38 @@ import Link from "next/link";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
 
+interface Prediction {
+  class: string;
+  confidence: number;
+}
+
+interface LayerData {
+  shape: number[];
+  values: number[][];
+}
+
+interface VisualizationData {
+  [layerName: string]: LayerData;
+}
+
+interface WaveformData {
+  values: number[];
+  sample_rate: number;
+  duration: number;
+}
+
+interface ApiResponse {
+  predictions: Prediction[];
+  visualization: VisualizationData;
+  input_spectrogram: LayerData;
+  waveform: WaveformData;
+}
+
 export default function HomePage() {
+  const[vizData, setVizData] = useState<null>(null);
   const [isLoading, setIsLoading] = useState(false);  // we create a useState to track if w uploading or analysing the file or not
-  
   const[fileName, setFileName] = useState("");
+  const[error, seterror] = useState<string | null>(null);
 
   const handleFileChange = async (
     event: React.ChangeEvent<HTMLInputElement>,
