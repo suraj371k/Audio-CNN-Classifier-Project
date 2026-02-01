@@ -141,6 +141,7 @@ Best: Epoch 100, Val Acc: 83.4%
 #  UI Components
 
 - Top Predictions
+![Top Preds]("C:\Users\samsung\Pictures\Screenshots\Screenshot 2026-02-02 035446.png")
 - Input Spectrogram
 - Audio Waveform
 - Convolutional Layer Outputs
