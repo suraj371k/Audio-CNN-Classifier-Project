@@ -48,6 +48,19 @@
 
 ![UI Demo 4](UIDemos/Screenshot%202026-02-02%20035517.png)
 
+---
+
+## From-Scratch ResNet-50
+
+**100% custom implementation** (no torchvision):
+
+✅ ResidualBlock: conv→BN→ReLU + dynamic 1×1 shortcut
+✅ Pre-activation ordering (BN→ReLU→Conv)
+✅ ModuleList for feature map collection
+✅ Exact ResNet-50: 3-4-6-3 blocks, 64→128→256→512 channels
+✅ Audio-specific: 1ch input, AdaptiveAvgPool2d(1,1)
+
+--
 
 ##  Architecture
 
