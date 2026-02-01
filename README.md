@@ -107,3 +107,43 @@ spectrogram = MelSpectrogram(sample_rate=44100, n_mels=128)
 output, feature_maps = model(spectrogram, return_feature_maps=True)
 ```
 
+## Frontend(React)
+```tsx
+const base64String = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+const { predictions, visualization, waveform } = await response.json();
+```
+---
+
+# Key Features
+- GPU Autoscaling - Modal scales to zero
+
+- NaN Handling - `torch.nan_to_num()` for robust inference
+
+- Stereo→Mono - `np.mean(audio_data, axis=1)`
+
+- Waveform Downsampling - Max 8000 samples for viz
+
+- Layer Splitting - `splitLayers()` for block visualization
+
+- ESC-50 Emojis - 50-class mapping (🐕🌧️👶🚪 etc.)
+
+---
+# Training
+```bash
+Dataset: ESC-50 (2000 clips, 5s, 44.1kHz)
+Splits: 5-fold CV (Fold 5 = test)
+Best: Epoch 100, Val Acc: 83.4%
+```
+---
+#  UI Components
+
+- Top Predictions
+- Input Spectrogram
+- Audio Waveform
+- Convolutional Layer Outputs
+
+
+---
+# License
+MIT - Use freely!
+
