@@ -79,11 +79,11 @@ Live API: https://harshit7271--audio-cnn-classifier-audioclassifier-inference.mo
 │   ├── components/ui/       # shadcn/ui (Badge, Card, Progress)
 │   └── lib/utils.ts        # API helpers
 ├── backend/                 # Modal + PyTorch
-│   ├── main.py               # FastAPI + AudioClassifier
-|   ├── train.py             
-│   ├── model.py            # ResNet-50 (16 blocks)
-│   ├── requirements.txt
-│   └── best_model.pth      # 83.4% checkpoint
+│   ├── main.py/               # FastAPI + AudioClassifier
+|   ├── train.py/             
+│   ├── model.py/            # ResNet-50 (16 blocks)
+│   ├── requirements.txt/
+│   └── best_model.pth/      # 83.4% checkpoint
 └── README.md
 
 ---
