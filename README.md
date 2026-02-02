@@ -61,6 +61,7 @@
 64→128→256→512 channels
 ✅ Audio-specific: 1ch input, AdaptiveAvgPool2d(1,1)
 
+
 ---
 
 ##  Architecture
