@@ -8,6 +8,11 @@
 
 **Production-ready audio-CNN classification** trained on **ResNet architecture** which i **created from scratch**, then trained the model on **ESC-50 DATASET** achieving **83.4% accuracy**. Live **feature map visualization**, **ResNet-50**, **Modal serverless**, **TensorBoard**, **Next.js 14 + React**.
 
+## 🚀 Launch App
+
+<a href="https://audio-cnn-visualizer-omega.vercel.app/" target="_blank">
+  <img src="https://img.shields.io/badge/Live%20Demo-Open%20App-brightgreen?style=for-the-badge" alt="Live Demo"/>
+</a>
 ---
 
 ##  Features
