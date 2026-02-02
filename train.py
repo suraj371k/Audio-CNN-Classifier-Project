@@ -110,12 +110,12 @@ def train():
 
     train_transform = nn.Sequential(
         T.MelSpectrogram(
-            sample_rate=22050,  # chnage it to 44100
+            sample_rate=44100,  # chnage it to 44100
             n_fft=1024,
             hop_length=512,
             n_mels=128,
             f_min=0,
-            f_max=11025   # this to 22050
+            f_max=22050   # this to 22050
         ),
         # convert to decibles
         T.AmplitudeToDB(),
@@ -126,12 +126,12 @@ def train():
 
     validation_transform = nn.Sequential(
         T.MelSpectrogram(
-            sample_rate=22050,    # change it to 44100
+            sample_rate=44100,    # change it to 44100
             n_fft=1024,
             hop_length=512,
             n_mels=128,
             f_min=0,
-            f_max=11025      # change it to 22050
+            f_max=22050      # change it to 22050
         ),
         T.AmplitudeToDB()
     )
@@ -180,7 +180,6 @@ def train():
 
         for data, target in progress_bar:
             data, target = data.to(device), target.to(device)
-
             if np.random.random() > 0.7:
                 # apply the mixup
                 data, target_a, target_b, lam = mixup_data(data, target)
