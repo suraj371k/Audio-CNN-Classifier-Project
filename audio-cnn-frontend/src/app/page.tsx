@@ -1,12 +1,9 @@
 "use client";
 
 import { Badge } from "~/components/ui/badge";
-import Link from "next/link";
 import { useState } from "react";
-import { set } from "zod/v4";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { ObjectFlags } from "typescript";
 import { Progress } from "~/components/ui/progress";
 import ColorScale from "~/components/ui/ColorScale";
 import FeatureMap from "~/components/ui/FeatureMap";
