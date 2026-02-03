@@ -112,6 +112,7 @@ pnpm dev
 
 ---
 ## Structure
+```
 ├── audio-cnn-frontend/              # Next.js 15 + React 19 (T3 Stack)
 │   ├── src/
 │   │   ├── app/
@@ -154,6 +155,7 @@ pnpm dev
 │   └── Screenshot*.png
 │
 └── README.md
+```
 
 ---
 
