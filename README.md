@@ -112,40 +112,47 @@ pnpm dev
 
 ---
 ## Structure
-├── audio-cnn-frontend/      # Next.js 15 + React 19 (T3 Stack)
-
+├── audio-cnn-frontend/              # Next.js 15 + React 19 (T3 Stack)
 │   ├── src/
-│   │   ├── app/            # App Router (page.tsx, layout.tsx)
-│   │   ├── components/ui/  # Custom + shadcn/ui components
-│   │   │   ├── FeatureMap.tsx    # SVG-based feature map visualization
-│   │   │   ├── Waveform.tsx      # Audio waveform SVG renderer
-│   │   │   ├── ColorScale.tsx     # Gradient color legend
-│   │   │   ├── badge.tsx          # shadcn/ui Badge
-│   │   │   ├── button.tsx         # shadcn/ui Button
-│   │   │   ├── card.tsx           # shadcn/ui Card
-│   │   │   └── progress.tsx       # shadcn/ui Progress
+│   │   ├── app/
+│   │   │   ├── page.tsx             # Main page with file upload & visualization
+│   │   │   └── layout.tsx           # Root layout with Geist font
+│   │   ├── components/
+│   │   │   └── ui/
+│   │   │       ├── FeatureMap.tsx   # SVG-based feature map visualization
+│   │   │       ├── Waveform.tsx     # Audio waveform SVG renderer
+│   │   │       ├── ColorScale.tsx   # Gradient color legend
+│   │   │       ├── badge.tsx        # shadcn/ui Badge component
+│   │   │       ├── button.tsx       # shadcn/ui Button component
+│   │   │       ├── card.tsx         # shadcn/ui Card component
+│   │   │       └── progress.tsx     # shadcn/ui Progress component
 │   │   ├── lib/
-│   │   │   ├── utils.ts    # cn() utility (clsx + tailwind-merge)
-│   │   │   └── colors.ts   # Feature map color mapping (RGB gradients)
-│   │   ├── env.js          # T3-OSS environment validation
-│   │   └── styles/
-│   │       └── globals.css # Tailwind CSS imports
-│   ├── package.json        # Dependencies & scripts
-│   ├── tsconfig.json       # TypeScript config (path aliases: ~/*)
-│   └── next.config.js      # Next.js configuration
+│   │   │   ├── utils.ts             # cn() utility (clsx + tailwind-merge)
+│   │   │   └── colors.ts            # Feature map color mapping (RGB gradients)
+│   │   ├── styles/
+│   │   │   └── globals.css          # Tailwind CSS imports
+│   │   └── env.js                   # T3-OSS environment validation
+│   ├── public/
+│   │   └── favicon.ico
+│   ├── package.json                 # Dependencies & scripts
+│   ├── tsconfig.json                # TypeScript config (path aliases: ~/*)
+│   ├── next.config.js               # Next.js configuration
+│   ├── tailwind.config.js           # Tailwind CSS configuration
+│   └── components.json              # shadcn/ui configuration
 
-├── backend/                 # Modal + PyTorch
-
-│   ├── main.py/               # FastAPI + AudioClassifier
-
-|   ├── train.py/             
-
-│   ├── model.py/            # ResNet-50 (16 blocks)
-
-│   ├── requirements.txt/
-
-│   └── best_model.pth/      # 83.4% checkpoint
-
+├── backend/                         # Modal + PyTorch
+│   ├── main.py                      # FastAPI + AudioClassifier endpoint
+│   ├── train.py                     # Training script
+│   ├── model.py                     # ResNet-50 (16 blocks)
+│   ├── requirements.txt             # Python dependencies
+│   └── best_model.pth               # 83.4% checkpoint (on Modal volume)
+│
+├── tensorboard_logs/                # Training logs
+│   └── run_*/                       # TensorBoard event files
+│
+├── UIDemos/                         # UI screenshots
+│   └── Screenshot*.png
+│
 └── README.md
 
 ---
